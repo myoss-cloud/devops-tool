@@ -31,10 +31,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriTemplateHandler;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-
+import app.myoss.cloud.core.lang.json.JsonApi;
+import app.myoss.cloud.core.lang.json.JsonArray;
+import app.myoss.cloud.core.lang.json.JsonObject;
 import app.myoss.cloud.web.utils.RestClient;
 import lombok.extern.slf4j.Slf4j;
 
@@ -116,16 +115,16 @@ public class SonatypeNexus3Controller {
                                   String getUrl, String deleteUrl) {
         HttpHeaders httpHeaders = getHttpHeaders(userName, password);
         String queryResult = RestClient.getForString(httpHeaders, getUrl, repositoryId, continuationToken);
-        JSONObject jsonObject = JSON.parseObject(queryResult);
-        continuationToken = jsonObject.getString("continuationToken");
-        JSONArray items = jsonObject.getJSONArray("items");
+        JsonObject jsonObject = JsonApi.fromJson(queryResult);
+        continuationToken = jsonObject.getAsString("continuationToken");
+        JsonArray items = jsonObject.getAsJsonArray("items");
         UriTemplateHandler uriTemplateHandler = RestClient.getRestTemplate().getUriTemplateHandler();
         for (Object item : items) {
-            JSONObject asset = (JSONObject) item;
-            String id = asset.getString("id");
+            JsonObject asset = (JsonObject) item;
+            String id = asset.getAsString("id");
             URI uri = uriTemplateHandler.expand(deleteUrl, id);
-            String deleteResult = RestClient.exchange(httpHeaders, MediaType.APPLICATION_JSON_UTF8, uri,
-                    HttpMethod.DELETE, null, String.class);
+            String deleteResult = RestClient.exchange(httpHeaders, MediaType.APPLICATION_JSON, uri, HttpMethod.DELETE,
+                    null, String.class);
             log.info(deleteResult);
         }
         return continuationToken;
