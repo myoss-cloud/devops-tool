@@ -20,6 +20,7 @@ package app.myoss.cloud.devops.web;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
@@ -120,8 +121,8 @@ public class SonatypeNexus3Controller {
         JsonArray items = jsonObject.getAsJsonArray("items");
         UriTemplateHandler uriTemplateHandler = RestClient.getRestTemplate().getUriTemplateHandler();
         for (Object item : items) {
-            JsonObject asset = (JsonObject) item;
-            String id = asset.getAsString("id");
+            LinkedHashMap<String, Object> asset = (LinkedHashMap<String, Object>) item;
+            String id = (String) asset.get("id");
             URI uri = uriTemplateHandler.expand(deleteUrl, id);
             String deleteResult = RestClient.exchange(httpHeaders, MediaType.APPLICATION_JSON, uri, HttpMethod.DELETE,
                     null, String.class);
